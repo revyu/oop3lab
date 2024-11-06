@@ -2,6 +2,10 @@
 #include <stdexcept>  // Для std::invalid_argument
 
 #include <cmath>
+#include "mixture.h"
+#include <fstream>
+#include <iostream>
+
 
 const double pi = 3.1415;
 
@@ -38,14 +42,59 @@ void empiric::set_spn(int n) {
     }
 }
 
+const std::vector<long double>& empiric::getDistribution() const {
+    return distribution;
+}
 
-empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) {
-    
-    set_n(n0);
+int empiric::getN() const {
+    return n;
+}
+
+const std::vector<std::pair<long double, long double>>& empiric::getDensity() const {
+    return density;
+}
+
+int empiric::getSpn() const {
+    return spn;
+}
+
+const std::vector<int>& empiric::getHistogramm() const {
+    return histogramm;
+}
+
+const std::vector<std::pair<long double, long double>>& empiric::getIntervals() const {
+    return intervals;
+}
+
+int empiric::getK() const {
+    return k;
+}
+
+long double empiric::getDelta() const {
+    return delta;
+}
+
+long double empiric::getMin() const {
+    return min;
+}
+
+long double empiric::getMax() const {
+    return max;
+}
+
+
+
+// реализация из вектора далее будет юзаться во всех трех конструкторов
+
+empiric::empiric(std::vector<long double> distribution, int k0, int spn0) {
+
+
+    set_n(distribution.size());
     set_k(k0);
     set_spn(spn0);
 
-    this->distribution = prim.simulate_distribution(n);
+    this->distribution = distribution;
+    //this->density = prim.density_vector(spn0);
 
     this->max = *std::min_element(this->distribution.begin(), this->distribution.end());
     this->min = *std::max_element(this->distribution.begin(), this->distribution.end());
@@ -76,57 +125,43 @@ empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) {
 
     }
 
+};
+
+
+empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) {
     
+    empiric(prim.simulate_distribution(n),k0,spn0);
+    this->density = prim.density_vector(spn0);
 
 }
 
 
 // to do доделать density
-empiric::empiric(int n0, mixture& mixt, int k0 = 1,int spn=10000) {
+empiric::empiric(int n0, mixture& mixt, int k0 = 1,int spn0=10000)  {
 
-    set_n(n0);
-    set_k(k0);
-
-    this->distribution = mixt.simulate_distribution(n);
-
+    empiric( mixt.simulate_distribution(n),k0,spn0);
+    this->density = mixt.density_vector(spn0);
     
-    this->max = *std::min_element(distribution.begin(), distribution.end());
-    this->min = *std::max_element(distribution.begin(), distribution.end());
-
-    this->delta = (1 / static_cast<float>(k)) * (this->max - this->min);
-
-    //строим интервалы
-    
-
-    // Поиск минимального элемента
-
-
-    for (int i = 1; i < k + 1; i++) {
-        this->intervals[i - 1].first = this->min + (i - 1) * this->delta;
-        this->intervals[i - 1].second = this->min + i * this->delta;
-
-    }
-
-    
-    for (int i = 0; i < n; i++) {
-        
-        for (int j = 0; j < k; j++) {
-            if (distribution[i] >= intervals[j].first) {
-                this->histogramm[j]++;
-                break;
-            }
-        }
-
-    }
-    for (int i = 0; i < this->spn;) {
-        
-        this->density[]
-
-    }
-
-    
-
 };
+
+empiric::empiric(const empiric& emp) {
+
+    empiric(emp.getDistribution(), emp.getK(), emp.getSpn());
+
+}
+
+empiric& empiric::operator=(const empiric& emp) {
+    if (this == &emp) {
+        return *this;  // Проверка на самоприсваивание
+    }
+
+    
+
+    return *this;
+}
+
+
+
 
 
 empiric::~empiric() {
@@ -176,3 +211,63 @@ long double empiric::kurtosis() {
 }
 
 
+void empiric::save(std::string filename) {
+    
+    std::ofstream file("output.txt");
+
+    file << this->n;
+    for (const auto& item : this->distribution) {
+        file << item << " ";
+    };
+
+
+
+}
+
+
+
+
+//по факту load
+empiric::empiric(std::string filename, int k0, int spn0) {
+
+    try {
+        // Открываем файл для чтения
+        std::ifstream file("output.txt");
+
+        // Проверка на существование файла
+        if (!file.is_open()) {
+            throw std::runtime_error("Ошибка: файл не существует.");
+        }
+
+        int length;
+        // Считываем длину массива
+        if (!(file >> length) || length <= 0) {
+            throw std::runtime_error("Ошибка: неверный формат данных — длина массива должна быть положительным числом.");
+        }
+
+        // Создаем вектор для хранения элементов
+        std::vector<long double> vector(length);
+
+        // Считываем элементы массива
+        for (int i = 0; i < length; ++i) {
+            if (!(file >> vector[i])) {
+                throw std::runtime_error("Ошибка: неверный формат данных — количество элементов не соответствует указанной длине.");
+            }
+        }
+
+        // Проверка на наличие лишних данных
+        int extraData;
+        if (file >> extraData) {
+            throw std::runtime_error("Ошибка: в файле присутствуют лишние данные.");
+        }
+
+        file.close();
+
+        // Выводим считанный массив на экран для проверки
+        
+        empiric(vector, k0, spn0);
+    }
+    catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+};

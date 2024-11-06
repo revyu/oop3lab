@@ -40,6 +40,7 @@ public:
 	void save(std::string) const;
 	void load(std::string);
 
+	std::vector<std::pair<long double, long double>> density_vector(int n);
 
 };
 

@@ -4,6 +4,7 @@
 #include <random>       // Для std::random_device, std::mt19937, std::uniform_real_distribution
 #include <algorithm>    // Для std::lower_bound, если используется в поиске по CDF
 #include <iostream>
+#include "empiric.h"
 
 
 //инициализируется равновероятным
@@ -174,6 +175,8 @@ void mixture::load(std::string filename) {
 
 	file.close();
 }
+
+
 std::vector<long double> mixture::simulate_distribution(int n) {
 	int num_points = 10000; // Количество точек для дискретизации CDF
 
@@ -260,38 +263,9 @@ std::vector<std::pair<long double, long double>> mixture::density_vector(int n) 
 	return res;
 }
 
-// вызывает simulate distribution получает распределение возвращает вектор длины k вида <k,высота столбца> относительная
-empiric mixture:: simulate_distribution(int n, int k) {
+// тоже самое что empiric(int n,mixture &mix,int k)
+empiric mixture:: simulate_distribution(int n, int k,int spn=10000) {
 	
-	std::vector<long double> data = this->simulate_distribution(n);
-
-	if (k == 1) {
-		k = std::floor(1.322*log2(n)) + 1;
-	}
-
-
-	//строим интервалы
-	std::vector<std::pair<long double, long double >> intervals(k);
-
-	
-
-	// Поиск минимального элемента
-	long double x_l = *std::min_element(data.begin(), data.end());
-	long double x_u = *std::max_element(data.begin(), data.end());
-
-	long double delta = (1 / static_cast<float>(k)) * (x_u - x_l);
-	
-
-	for (int i = 1; i < k+1; i++) {
-		intervals[i-1].first = x_l + (i - 1) * delta;
-		intervals[i - 1].second = x_l + i * delta;
-
-	}
-
-	std::vector<std::pair <int, int>> histogramm(k);
-
-	for (long double value: data) {
-		for (int i=1;i)
-	}
+	return empiric(n, *this, k, spn);
 
 };

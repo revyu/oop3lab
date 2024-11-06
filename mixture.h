@@ -1,6 +1,6 @@
 #pragma once
 #include "primary.h"
-#include "empiric.h"
+
 
 struct component
 {
@@ -9,6 +9,8 @@ struct component
 
 	
 };
+
+class empiric;
 
 class mixture {
 private:
@@ -45,10 +47,9 @@ public:
 
 	std::vector<long double> simulate_distribution(int n);
 
-	empiric simulate_distribution(int n, int k); 
+	empiric simulate_distribution(int n, int k,int spn); 
 	
 
 };
-//
-//данные не должны меняться не явно ?
-//mixture.components[0].set_v() не должно менять распределение с которого создавалась mixture ?
+
+

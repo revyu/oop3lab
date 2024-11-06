@@ -27,13 +27,13 @@ int main()
     mixture mix({ primary(2, 0, 1), primary(2, 5, 1) });
 
 
-    std::cout << mix.mean()<<" " << mix.dispersion() << std::endl;
-    
+    std::cout << mix.mean() << " " << mix.dispersion() << std::endl;
+
 
     std::vector<long double> dis = mix.simulate_distribution(10000);
 
-    
-    std::vector<std::pair<long double,long double>> den = mix.density_vector(10000);
+
+    std::vector<std::pair<long double, long double>> den = mix.density_vector(10000);
 
     std::ofstream file("density.txt");
     if (file.is_open()) {
@@ -49,9 +49,9 @@ int main()
         }
         file.close();
     }
-        
-        
-        
+
+
+
 
 
     /*
@@ -86,4 +86,4 @@ int main()
         std::getline(std::cin, command);
     }
     */
-    }
+}

@@ -326,3 +326,32 @@ void primary::load(std::string file_name) {
         std::cerr << "Ошибка при чтении данных из файла." << std::endl;
     }
 }
+
+
+std::vector<std::pair<long double, long double>> primary::density_vector(int n) {
+
+    int num_points = n; // Количество точек для дискретизации CDF
+
+    long double sigma = std::sqrt(this->dispersion()); // Замените на актуальное значение сигмы
+    long double min_x = this->mean() - 2 * sigma;
+    long double max_x = this->mean() + 2 * sigma;
+    long double step = (max_x - min_x) / (num_points - 1);
+
+    // 1. Создаём массив значений x и вычисляем плотности
+    std::vector<long double> x_values(num_points);
+    std::vector<long double> densities(num_points);
+    for (int i = 0; i < num_points; ++i) {
+        x_values[i] = min_x + i * step;
+        densities[i] = density(x_values[i]);
+    }
+
+    std::vector<std::pair<long double, long double>> res(n);
+
+    for (int i = 0; i < n; i++) {
+
+        res[i].first = x_values[i];
+        res[i].second = densities[i];
+    }
+
+    return res;
+}
