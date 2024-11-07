@@ -76,6 +76,7 @@ public:
 	
 	void save_hist(std::string filename);
 
+	void save_density(std::string filename);
 	//void load(std::string filename);// нужна ли ? почему просто не сделать сразу готовый конструктор?
 
 

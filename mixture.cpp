@@ -181,8 +181,8 @@ std::vector<long double> mixture::simulate_distribution(int n, int spn = 10000) 
 	 
 
 	long double sigma = std::sqrt(this->dispersion()); // Замените на актуальное значение сигмы
-	long double min_x = this->mean() -   sigma;
-	long double max_x = this->mean() +  sigma;
+	long double min_x = this->mean() -  3* sigma;
+	long double max_x = this->mean() + 3* sigma;
 	long double step = (max_x - min_x) / (spn - 1);
 
 	// 1. Создаём массив значений x и вычисляем плотности
@@ -237,13 +237,15 @@ std::vector<long double> mixture::simulate_distribution(int n, int spn = 10000) 
 	
 }
 
+
+// to do : эта штука должна вызываться при simulate distribution
 std::vector<std::pair<long double, long double>> mixture::density_vector(int spn) {
 	
 	int num_points = spn; // Количество точек для дискретизации CDF
 
 	long double sigma = std::sqrt(this->dispersion()); // Замените на актуальное значение сигмы
-	long double min_x = this->mean() -2* sigma;
-	long double max_x = this->mean() + 2*sigma;
+	long double min_x = this->mean() -3* sigma;
+	long double max_x = this->mean() + 3*sigma;
 	long double step = (max_x - min_x) / (num_points - 1);
 
 	// 1. Создаём массив значений x и вычисляем плотности

@@ -333,8 +333,8 @@ std::vector<std::pair<long double, long double>> primary::density_vector(int n) 
     int num_points = n; // Количество точек для дискретизации CDF
 
     long double sigma = std::sqrt(this->dispersion()); // Замените на актуальное значение сигмы
-    long double min_x = this->mean() - 2 * sigma;
-    long double max_x = this->mean() + 2 * sigma;
+    long double min_x = this->mean() - 3 * sigma;
+    long double max_x = this->mean() + 3 * sigma;
     long double step = (max_x - min_x) / (num_points - 1);
 
     // 1. Создаём массив значений x и вычисляем плотности

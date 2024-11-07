@@ -8,6 +8,8 @@
 #include <windows.h> 
 #include <fstream> // Добавьте эту строку в начало файла
 
+#include <cstdlib>
+
 int main()
 {
     srand(time(0));
@@ -24,37 +26,13 @@ int main()
     std::vector<mixture> mixtures(100, mixture(single_primary));
     std::vector<empiric> distributions;
 
-    mixture mix({ primary(2, 0, 1), primary(2, 5, 1) });
-
     
-
-
-    std::cout << mix.mean() << " " << mix.dispersion() << std::endl;
-
-
-    empiric emp1(100, mix, 1, 1000);
-    
-    std::cout << "это из main1  n " << emp1.getN() << std::endl;
-    std::cout << "это из main1 max" << emp1.getMax() << std::endl;
-    
-    empiric emp2(1000, mix, 1, 1000);
-    std::cout << "это из main2 n " << emp2.getN()<<std::endl ;
-    std::cout << "это из main2  max " << emp2.getMax() << std::endl;
-
-
-    empiric emp3=mix.simulate_distribution(100, 1, 1000);
-
-    //std::cout << "это из main3 n " << emp3.getN() << std::endl;
-    //std::cout << "это из main3  max " << emp3.getMax() << std::endl;
-
-    emp3.save_hist("emp3");
-
-
-    /*
+    int key,key1,key2;
+    int n,n0,k0,spn;
     while (command != "exit") {
         if (command == "add_new") {
 
-            int key = input_int("key");
+            key = input_int("key");
             while (key > 100) {
                 std::cout << "Неподходящее значение key : key должно быть меньше 100";
                 key = input_int("key");
@@ -63,23 +41,54 @@ int main()
             std::getline(std::cin, command);
 
             if (command == "primary") {
-                primaries[key] = primary(" ");
+                primaries[key] = primary(" ");//вызов будет из консоли (попросит ввести n,v,mu, и т.д.)
             }
             if (command == "mixture") {
-                int key1 = input_int("key");
-                int key2 = input_int("key");
+                key1 = input_int("key");
+                key2 = input_int("key");
+
+                mixtures[key] = mixture({ primaries[key1],primaries[key2] });
+
             }
             if (command == "empiric") {
+                n = input_int("n");
                 std::cout << "Откуда?";
-                int n = input_int("n");
-                std::vector<long double> dis = mixtures[0].simulate_distribution(n);
+                std::getline(std::cin, command);
+                
 
-                for (int i = 0; i < n; i++) {
-                    std::cout << dis[i];
-                }
+                key1 = input_int("key"); // вводим ключ откуда хотим получить
+                n0 = input_int("n0");
+                k0 = input_int("k0");
+                spn = input_int("spn");
+
+                if (command == "prim") {
+                    distributions[key1] = empiric(n0, mixtures[key1], k0, spn);
+                };
+
+                if (command == "mix") {
+                    distributions[key1] = empiric(n0, primaries[key1], k0, spn);
+                };
             }
+
+             
         }
+
+        //to do : maybe сделать так что бы можно было показывать прямо из prim и mix не создавая перед этим empiric?
+        if (command == "show") {
+            
+            
+        key1 = input_int("key");
+
+        distributions[key1].save_hist("hist.txt");
+        distributions[key1].save_density("density.txt");
+          
+
+        sy
+        }
+
+        
+
         std::getline(std::cin, command);
     }
-    */
+    
 }

@@ -150,10 +150,7 @@ empiric::empiric(std::vector<long double> distribution0, int k0, int spn0) {
 };
 
 
-empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) {
-    
-    empiric(prim.simulate_distribution(n),k0,spn0);
-    
+empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) :empiric(prim.simulate_distribution(n0), k0, spn0) {
     
     this->density = prim.density_vector(spn0);
 
@@ -240,7 +237,7 @@ void empiric::save(std::string filename) {
     
     std::ofstream file(filename);
 
-    file << this->n;
+    file << this->n<<std::endl;
     for (const auto& item : this->distribution) {
         file << item << " ";
     };
@@ -257,13 +254,26 @@ void empiric::save(std::string filename) {
 void empiric::save_hist(std::string filename) {
 
     std::ofstream file(filename);
-    file << this->k << std::endl;
+    file << this->k <<" "<< this->n << std::endl;
     for (int i = 0; i < this->k; i++) {
         file << this->intervals[i].first << " " << this->intervals[i].second << " " <<this->histogramm[i]<<std::endl;
     }
 
     file.close();
 };
+
+//сохраняет ключ пары x mixt.density(x) на участке +- 3 сигмы
+void empiric::save_density(std::string filename) {
+    
+
+    std::ofstream file(filename);
+    
+    for (int i = 0; i < this->spn; i++) {
+        file << this->density[i].first << " " << this->density[i].second <<  std::endl;
+    }
+
+    file.close();
+}
 
 
 
