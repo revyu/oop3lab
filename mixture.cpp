@@ -177,26 +177,26 @@ void mixture::load(std::string filename) {
 }
 
 
-std::vector<long double> mixture::simulate_distribution(int n) {
-	int num_points = 10000; // Количество точек для дискретизации CDF
+std::vector<long double> mixture::simulate_distribution(int n, int spn = 10000) {
+	 
 
 	long double sigma = std::sqrt(this->dispersion()); // Замените на актуальное значение сигмы
 	long double min_x = this->mean() -   sigma;
 	long double max_x = this->mean() +  sigma;
-	long double step = (max_x - min_x) / (num_points - 1);
+	long double step = (max_x - min_x) / (spn - 1);
 
 	// 1. Создаём массив значений x и вычисляем плотности
-	std::vector<long double> x_values(num_points);
-	std::vector<long double> densities(num_points);
-	for (int i = 0; i < num_points; ++i) {
+	std::vector<long double> x_values(spn);
+	std::vector<long double> densities(spn);
+	for (int i = 0; i < spn; ++i) {
 		x_values[i] = min_x + i * step;
 		densities[i] = density(x_values[i]);
 	}
 
 	// 2. Строим префиксные суммы для CDF
-	std::vector<long double> cdf(num_points);
+	std::vector<long double> cdf(spn);
 	cdf[0] = densities[0];
-	for (int i = 1; i < num_points; ++i) {
+	for (int i = 1; i < spn; ++i) {
 		cdf[i] = cdf[i - 1] + densities[i];
 
 		//std::cout <<"x_i "<<x_values[i] << " density " << densities[i] << " cdf " << cdf[i] << std::endl;
@@ -231,13 +231,15 @@ std::vector<long double> mixture::simulate_distribution(int n) {
 		distribution[i] = x_values[index];
 	}
 
+	std::cout << " это из mixture.cpp" <<n ;
+
 	return distribution;
 	
 }
 
-std::vector<std::pair<long double, long double>> mixture::density_vector(int n) {
+std::vector<std::pair<long double, long double>> mixture::density_vector(int spn) {
 	
-	int num_points = n; // Количество точек для дискретизации CDF
+	int num_points = spn; // Количество точек для дискретизации CDF
 
 	long double sigma = std::sqrt(this->dispersion()); // Замените на актуальное значение сигмы
 	long double min_x = this->mean() -2* sigma;
@@ -252,9 +254,9 @@ std::vector<std::pair<long double, long double>> mixture::density_vector(int n) 
 		densities[i] = density(x_values[i]);
 	}
 
-	std::vector<std::pair<long double, long double>> res(n);
+	std::vector<std::pair<long double, long double>> res(spn);
 
-	for (int i = 0; i < n; i++) {
+	for (int i = 0; i < spn; i++) {
 		
 		res[i].first = x_values[i];
 		res[i].second = densities[i];

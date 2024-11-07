@@ -26,32 +26,28 @@ int main()
 
     mixture mix({ primary(2, 0, 1), primary(2, 5, 1) });
 
+    
+
 
     std::cout << mix.mean() << " " << mix.dispersion() << std::endl;
 
 
-    std::vector<long double> dis = mix.simulate_distribution(10000);
+    empiric emp1(100, mix, 1, 1000);
+    
+    std::cout << "это из main1  n " << emp1.getN() << std::endl;
+    std::cout << "это из main1 max" << emp1.getMax() << std::endl;
+    
+    empiric emp2(1000, mix, 1, 1000);
+    std::cout << "это из main2 n " << emp2.getN()<<std::endl ;
+    std::cout << "это из main2  max " << emp2.getMax() << std::endl;
 
 
-    std::vector<std::pair<long double, long double>> den = mix.density_vector(10000);
+    empiric emp3=mix.simulate_distribution(100, 1, 1000);
 
-    std::ofstream file("density.txt");
-    if (file.is_open()) {
-        for (auto value : den) {
-            file << value.first << " " << value.second << "\n";  // Запись каждого значения в новой строке
-        }
-        file.close();
-    }
-    std::ofstream file1("dis.txt");
-    if (file1.is_open()) {
-        for (auto value : dis) {
-            file << value << "\n";  // Запись каждого значения в новой строке
-        }
-        file.close();
-    }
+    //std::cout << "это из main3 n " << emp3.getN() << std::endl;
+    //std::cout << "это из main3  max " << emp3.getMax() << std::endl;
 
-
-
+    emp3.save_hist("emp3");
 
 
     /*

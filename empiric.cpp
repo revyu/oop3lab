@@ -11,12 +11,16 @@ const double pi = 3.1415;
 
 
 void empiric::set_k(int k0) {
+
+    std::cout << "привет из сеттера" << k0 << std::endl;
     if (k0 == 1) {
         this->k = std::floor(1.322 * log2(this->n)) + 1;
+        std::cout << "это из сеттера k " << k0 << std::endl;
     }
     else {
         if (k0 > 1) {
-            this->k = k;
+            this->k = k0;
+            std::cout << "это из сеттера k " << k0 << std::endl;
         }
         else {
             throw std::invalid_argument("k должен быть больше или равен 1");
@@ -33,12 +37,12 @@ void empiric::set_n(int n) {
     }
 }
 
-void empiric::set_spn(int n) {
+void empiric::set_spn(int spn0) {
     if (n < 2) {
         throw std::invalid_argument("n должен быть больше или равен 2");
     }
     else {
-        this->n = n;
+        this->spn = spn0;
     }
 }
 
@@ -86,18 +90,27 @@ long double empiric::getMax() const {
 
 // реализация из вектора далее будет юзаться во всех трех конструкторов
 
-empiric::empiric(std::vector<long double> distribution, int k0, int spn0) {
+empiric::empiric(std::vector<long double> distribution0, int k0, int spn0) {
+
+    std::cout << "это из конструктора dist.size" << distribution0.size() << std::endl;
 
 
-    set_n(distribution.size());
-    set_k(k0);
+    set_n(distribution0.size());
+
+    std::cout << "это из конструктора n " << this->n << std::endl;
+    this->set_k(k0);
+    std::cout << "это из конструктора k0 " << k0 << std::endl;
+    std::cout << "это из конструктора k " << this->k << std::endl;
     set_spn(spn0);
 
-    this->distribution = distribution;
-    //this->density = prim.density_vector(spn0);
+    this->distribution = distribution0;
 
-    this->max = *std::min_element(this->distribution.begin(), this->distribution.end());
-    this->min = *std::max_element(this->distribution.begin(), this->distribution.end());
+
+    //this->density = prim.density_vector(spn0);
+    std::cout << "это из конструктора n 1 " << this->n << std::endl;
+
+    this->max = *std::max_element(this->distribution.begin(), this->distribution.end());
+    this->min = *std::min_element(this->distribution.begin(), this->distribution.end());
 
     this->delta = (1 / static_cast<float>(k)) * (this->max - this->min);
 
@@ -105,25 +118,34 @@ empiric::empiric(std::vector<long double> distribution, int k0, int spn0) {
 
 
     // Поиск минимального элемента
-    this->intervals = std::vector<std::pair<long double, long double>>(n, std::make_pair(0.0L, 0.0L));
-
+    this->intervals = std::vector<std::pair<long double, long double>>(k, std::make_pair(0.0L, 0.0L));
+    std::cout << "это из конструктора n 1 " << this->n << std::endl;
     for (int i = 1; i < k + 1; i++) {
+       
         this->intervals[i - 1].first = this->min + (i - 1) * this->delta;
         this->intervals[i - 1].second = this->min + i * this->delta;
-
+       
     }
+    std::cout << "kal";
+
+    this->histogramm = std::vector<int>(k);
+
+    std::cout << distribution0.size() << std::endl;
+    std::cout << distribution.size() << std::endl;
+    std::cout << "это из конструктора n 2 " << this->n << std::endl;
 
 
     for (int i = 0; i < this->n; i++) {
-
+        //std::cout << i<<std::endl;
         for (int j = 0; j < this->k; j++) {
-            if (this->distribution[i] >= this->intervals[j].first) {
+            if (this->distribution[i] <= this->intervals[j].second) {
                 this->histogramm[j]++;
                 break;
             }
         }
 
     }
+    
 
 };
 
@@ -131,15 +153,20 @@ empiric::empiric(std::vector<long double> distribution, int k0, int spn0) {
 empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) {
     
     empiric(prim.simulate_distribution(n),k0,spn0);
+    
+    
     this->density = prim.density_vector(spn0);
 
 }
 
 
 // to do доделать density
-empiric::empiric(int n0, mixture& mixt, int k0 = 1,int spn0=10000)  {
+empiric::empiric(int n0, mixture& mixt, int k0 = 1,int spn0=10000) :empiric(mixt.simulate_distribution(n0,spn0), k0, spn0) {
 
-    empiric( mixt.simulate_distribution(n),k0,spn0);
+
+    
+    
+    std::cout << "это из конструктора по миксу n " << this->n << std::endl;
     this->density = mixt.density_vector(spn0);
     
 };
@@ -150,15 +177,13 @@ empiric::empiric(const empiric& emp) {
 
 }
 
+//то же не понял зачем вроде и так работает
+/*
 empiric& empiric::operator=(const empiric& emp) {
-    if (this == &emp) {
-        return *this;  // Проверка на самоприсваивание
-    }
-
-    
 
     return *this;
 }
+*/
 
 
 
@@ -213,7 +238,7 @@ long double empiric::kurtosis() {
 
 void empiric::save(std::string filename) {
     
-    std::ofstream file("output.txt");
+    std::ofstream file(filename);
 
     file << this->n;
     for (const auto& item : this->distribution) {
@@ -223,6 +248,23 @@ void empiric::save(std::string filename) {
 
 
 }
+
+
+// по факту сохраняет и гистограмму и интервалы 
+// на первой строке k
+// потом идет k строк вида граница интервала количество значений в нем 
+
+void empiric::save_hist(std::string filename) {
+
+    std::ofstream file(filename);
+    file << this->k << std::endl;
+    for (int i = 0; i < this->k; i++) {
+        file << this->intervals[i].first << " " << this->intervals[i].second << " " <<this->histogramm[i]<<std::endl;
+    }
+
+    file.close();
+};
+
 
 
 

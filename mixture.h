@@ -45,7 +45,7 @@ public:
 	long double kurtosis();
 
 
-	std::vector<long double> simulate_distribution(int n);
+	std::vector<long double> simulate_distribution(int n,int spn);
 
 	empiric simulate_distribution(int n, int k,int spn); 
 	

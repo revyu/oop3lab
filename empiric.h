@@ -70,7 +70,12 @@ public:
 	long double dispersion();
 	long double skewness();
 	long double kurtosis();
+
+	//сохраняет distribution
 	void save(std::string filename);// нужна для персистенстости
+	
+	void save_hist(std::string filename);
+
 	//void load(std::string filename);// нужна ли ? почему просто не сделать сразу готовый конструктор?
 
 
