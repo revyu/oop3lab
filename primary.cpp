@@ -226,18 +226,9 @@ primary::primary(long double v, long double mu, long double lambda) {
     set_v(v); set_mu(mu); set_lambda(lambda);
 }
 
-primary::primary(const std::string& input) {
-    long double v = input_double("v");
-    /*
-    while (v < 1) {
-        std::cout << "Неподходящее значение v : v должно быть больше 1";
-        v = input_double("v");
-    }
-    */
-    long double mu = input_double("mu");
-    long double lambda = input_double("lambda");
-
-    primary(v, mu, lambda);
+primary::primary(const std::string& input)
+    : v(input_double("v")), mu(input_double("mu")), lambda(input_double("lambda")) {
+    // Здесь можно добавить дополнительную логику конструктора, если необходимо
 }
 
 primary::primary(const primary& other) {
@@ -264,7 +255,7 @@ long double primary::get_lambda() const {
 }
 
 
-std::vector<long double> primary::simulate_distribution(int n) {
+std::vector<long double> primary::simulate_distribution(int n) const {
     std::vector<long double> distribution(n);
     for (int i = 0; i < n; i++) {
         long double x = 0;

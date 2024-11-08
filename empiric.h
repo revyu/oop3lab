@@ -1,6 +1,7 @@
 #pragma once
 #include "primary.h"
 #include "mixture.h"
+#include <variant>
 
 
 
@@ -20,6 +21,10 @@ private:
 	std::vector<std::pair<long double, long double >> intervals;
 	//границы интервалов
 	 
+	primary* primary_source = nullptr;
+	mixture* mixture_source = nullptr;
+
+
 	int k;//количество столбцов в гистограмме 
 
 	long double delta; // ширина интервала
@@ -44,6 +49,10 @@ public:
 	long double getDelta() const;
 	long double getMin() const;
 	long double getMax() const;
+	primary* get_primary_source();
+	mixture* get_mixture_source();
+	
+
 
 	
 
@@ -51,7 +60,7 @@ public:
 	empiric(int n0, mixture& mixt, int k0 ,int spn0);  
 	
 
-	empiric(int n0, empiric& emp, int k0, int spn0);
+	empiric(int n0,empiric& emp, int k0, int spn0);
 	
 	empiric(const empiric& emp);
 	//чем отличаютс€ 
@@ -77,6 +86,12 @@ public:
 	void save_hist(std::string filename);
 
 	void save_density(std::string filename);
+
+
+	// ћетоды дл€ установки источника распределени€
+	void set_distribution_source(const primary& prim);
+	void set_distribution_source(const mixture& mixt);
+
 	//void load(std::string filename);// нужна ли ? почему просто не сделать сразу готовый конструктор?
 
 

@@ -231,7 +231,7 @@ std::vector<long double> mixture::simulate_distribution(int n, int spn = 10000) 
 		distribution[i] = x_values[index];
 	}
 
-	std::cout << " это из mixture.cpp" <<n ;
+	
 
 	return distribution;
 	

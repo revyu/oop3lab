@@ -36,11 +36,11 @@ public:
 	long double get_v() const;
 	long double get_mu() const;
 	long double get_lambda() const;
-	std::vector<long double> simulate_distribution(int n);
+	std::vector<long double> simulate_distribution(int n) const;
 	void save(std::string) const;
 	void load(std::string);
 
-	std::vector<std::pair<long double, long double>> density_vector(int n);
+	std::vector<std::pair<long double, long double>> density_vector(int n) ;
 
 };
 

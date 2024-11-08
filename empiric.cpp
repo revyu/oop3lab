@@ -12,15 +12,15 @@ const double pi = 3.1415;
 
 void empiric::set_k(int k0) {
 
-    std::cout << "привет из сеттера" << k0 << std::endl;
+   
     if (k0 == 1) {
         this->k = std::floor(1.322 * log2(this->n)) + 1;
-        std::cout << "это из сеттера k " << k0 << std::endl;
+        
     }
     else {
         if (k0 > 1) {
             this->k = k0;
-            std::cout << "это из сеттера k " << k0 << std::endl;
+            
         }
         else {
             throw std::invalid_argument("k должен быть больше или равен 1");
@@ -88,26 +88,35 @@ long double empiric::getMax() const {
 
 
 
+ primary* empiric::get_primary_source()  {
+    return primary_source;  // Возвращает указатель на primary или nullptr
+}
+
+ mixture* empiric::get_mixture_source()  {
+    return mixture_source;  // Возвращает указатель на mixture или nullptr
+}
+
+
 // реализация из вектора далее будет юзаться во всех трех конструкторов
 
 empiric::empiric(std::vector<long double> distribution0, int k0, int spn0) {
 
-    std::cout << "это из конструктора dist.size" << distribution0.size() << std::endl;
-
+    
 
     set_n(distribution0.size());
 
-    std::cout << "это из конструктора n " << this->n << std::endl;
+    
     this->set_k(k0);
-    std::cout << "это из конструктора k0 " << k0 << std::endl;
-    std::cout << "это из конструктора k " << this->k << std::endl;
+    
+    
     set_spn(spn0);
 
     this->distribution = distribution0;
 
 
     //this->density = prim.density_vector(spn0);
-    std::cout << "это из конструктора n 1 " << this->n << std::endl;
+   
+   
 
     this->max = *std::max_element(this->distribution.begin(), this->distribution.end());
     this->min = *std::min_element(this->distribution.begin(), this->distribution.end());
@@ -119,20 +128,18 @@ empiric::empiric(std::vector<long double> distribution0, int k0, int spn0) {
 
     // Поиск минимального элемента
     this->intervals = std::vector<std::pair<long double, long double>>(k, std::make_pair(0.0L, 0.0L));
-    std::cout << "это из конструктора n 1 " << this->n << std::endl;
+    
     for (int i = 1; i < k + 1; i++) {
        
         this->intervals[i - 1].first = this->min + (i - 1) * this->delta;
         this->intervals[i - 1].second = this->min + i * this->delta;
        
     }
-    std::cout << "kal";
-
+    
     this->histogramm = std::vector<int>(k);
 
-    std::cout << distribution0.size() << std::endl;
-    std::cout << distribution.size() << std::endl;
-    std::cout << "это из конструктора n 2 " << this->n << std::endl;
+    
+   
 
 
     for (int i = 0; i < this->n; i++) {
@@ -153,6 +160,8 @@ empiric::empiric(std::vector<long double> distribution0, int k0, int spn0) {
 empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) :empiric(prim.simulate_distribution(n0), k0, spn0) {
     
     this->density = prim.density_vector(spn0);
+    this->primary_source = new primary(prim);  // Создаем копию объекта prim
+    this->mixture_source = nullptr;  // Устанавливаем mixture_source в nullptr, поскольку он не используется
 
 }
 
@@ -161,26 +170,95 @@ empiric::empiric(int n0, primary& prim ,int k0=1 ,int spn0=10000) :empiric(prim.
 empiric::empiric(int n0, mixture& mixt, int k0 = 1,int spn0=10000) :empiric(mixt.simulate_distribution(n0,spn0), k0, spn0) {
 
 
-    
-    
-    std::cout << "это из конструктора по миксу n " << this->n << std::endl;
     this->density = mixt.density_vector(spn0);
-    
+    this->primary_source = nullptr;  // Создаем копию объекта prim
+    this->mixture_source = new mixture(mixt);
 };
 
-empiric::empiric(const empiric& emp) {
-
-    empiric(emp.getDistribution(), emp.getK(), emp.getSpn());
-
+empiric::empiric(int n0, empiric& emp, int k0, int spn0)
+    : empiric(
+        emp.get_primary_source() ? emp.get_primary_source()->simulate_distribution(n0)
+        : emp.get_mixture_source() ? emp.get_mixture_source()->simulate_distribution(n0, spn0)
+        : throw std::runtime_error("Не установлен ни primary, ни mixture источник"),
+        k0, spn0) // Используем список инициализации для вызова другого конструктора
+{
+    // Если источник - primary, то устанавливаем density и source
+    if (emp.get_primary_source()) {
+        this->density = emp.get_primary_source()->density_vector(spn0);
+        this->primary_source = new primary(*emp.get_primary_source());
+        this->mixture_source = nullptr;
+    }
+    // Если источник - mixture, то устанавливаем density и source
+    else if (emp.get_mixture_source()) {
+        this->density = emp.get_mixture_source()->density_vector(spn0);
+        this->mixture_source = new mixture(*emp.get_mixture_source());
+        this->primary_source = nullptr;
+    }
 }
 
-//то же не понял зачем вроде и так работает
-/*
-empiric& empiric::operator=(const empiric& emp) {
 
+
+empiric::empiric(const empiric& emp) {
+    // Копируем данные
+    this->distribution = emp.distribution;
+    this->n = emp.n;
+    this->density = emp.density;
+    this->spn = emp.spn;
+    this->histogramm = emp.histogramm;
+    this->intervals = emp.intervals;
+    this->k = emp.k;
+    this->delta = emp.delta;
+    this->min = emp.min;
+    this->max = emp.max;
+
+    // Создаем копию источника распределения, если он задан
+    if (emp.primary_source) {
+        this->primary_source = new primary(*emp.primary_source);
+    }
+    if (emp.mixture_source) {
+        this->mixture_source = new mixture(*emp.mixture_source);
+    }
+}
+
+empiric& empiric::operator=(const empiric& emp) {
+    if (this != &emp) {  // Проверка на самоприсваивание
+        // Копируем данные
+        this->distribution = emp.distribution;
+        this->n = emp.n;
+        this->density = emp.density;
+        this->spn = emp.spn;
+        this->histogramm = emp.histogramm;
+        this->intervals = emp.intervals;
+        this->k = emp.k;
+        this->delta = emp.delta;
+        this->min = emp.min;
+        this->max = emp.max;
+
+        // Создаем копию источника распределения, если он задан
+        if (emp.primary_source) {
+            // Удаляем старый объект и создаем новый
+            //delete this->primary_source;
+            this->primary_source = new primary(*emp.primary_source);
+        }
+        else {
+            //delete this->primary_source;
+            this->primary_source = nullptr;
+        }
+
+        if (emp.mixture_source) {
+            // Удаляем старый объект и создаем новый
+            delete this->mixture_source;
+            this->mixture_source = new mixture(*emp.mixture_source);
+        }
+        else {
+            delete this->mixture_source;
+            this->mixture_source = nullptr;
+        }
+    }
     return *this;
 }
-*/
+
+
 
 
 
@@ -254,6 +332,14 @@ void empiric::save(std::string filename) {
 void empiric::save_hist(std::string filename) {
 
     std::ofstream file(filename);
+
+
+    std::cout << "from save hist";
+    for (int i = 0; i < this->k; i++) {
+
+        std::cout << this->getIntervals()[i].first << this->getIntervals()[i].second << std::endl;
+    }
+
     file << this->k <<" "<< this->n << std::endl;
     for (int i = 0; i < this->k; i++) {
         file << this->intervals[i].first << " " << this->intervals[i].second << " " <<this->histogramm[i]<<std::endl;

@@ -37,7 +37,7 @@ public:
 
 
 	long double density(double x);
-	std::vector<std::pair<long double, long double>> density_vector(int n);
+	std::vector<std::pair<long double, long double>> density_vector(int n) ;
 	//double density(double& x);
 	long double mean();
 	long double dispersion();
